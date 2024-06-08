@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Psychology</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        .content {
+            min-height: 150%;
+            /* 用于添加一些填充，以便页脚不会紧贴内容 */
+            padding: 20px; 
+            box-sizing: border-box;
+        }
+
+        #sidebar {
+            width: 250px;
+            height: 100%;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: -200px; /* 初始时侧边栏在屏幕外 */
+            background: #333;
+            overflow-x: hidden;
+            padding-top: 20px;
+            transition: left 0.3s; /* 平滑过渡效果 */
+        }
+        
+            
+        #sidebar a {
+            padding: 6px 8px 6px 16px;
+            text-decoration: none;
+            font-size: 20px;
+            color: white;
+            display: block;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+
+        #home {
+            margin-left: 100px;
+            color: #ffffff;
+        }
+
+        #sidebar a:hover {
+            color: #808080;/* 悬停时的颜色变深 */
+        }
+        
+        #sidebar a:active {
+            color: #ffffff; /* 点击时的颜色变白 */
+            animation: shake 0.5s; /* 添加震动动画 */
+        }
+
+        /* 震动动画 */
+        @keyframes shake {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(0.9) translateX(-10px); }
+            50% { transform: scale(1.1) translateX(10px); }
+            75% { transform: scale(0.9) translateX(-10px); }
+        }
+
+        .sub-options {
+            display: none; /* 初始时隐藏子选项 */
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        .sub-option {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .sub-option:hover {
+            color: #808080; /* 悬停时的颜色变深 */
+        }
+
+
+        /* 搜索框的基本样式 */
+        .search-box {
+            margin-left: 300px; /* 调整搜索框位置 */
+            display: flex;
+            text-align: center;
+            align-items: center;
+            position: relative;
+            margin-top: 20px;
+            width: 50%;
+        }
+        .search-box .icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            pointer-events: none; /* 禁止点击 */
+        }
+        .search-box input[type="text"] {
+            width: 100%;
+            padding: 10px 20px 10px 40px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            transition: border 0.3s ease;
+        }
+        .search-box input[type="text"]:focus {
+            border: 3px solid #555;
+        }
+
+        /* 页脚的基本样式 */
+        .footer {
+            position: relative;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            line-height: 50px;
+            padding: 10px 0;
+        }
+
+        .footer a {
+            color: white;
+            padding: 0 15px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: #93ffff; /* 点击时的颜色变化 */
+            text-decoration: none;
+        }
+        
+        .footer a:active {
+            color: #00eaff; /* 点击时的颜色变深 */
+        }
+
+        .content {
+            margin-left: 250px; /* 调整内容区域位置 */
+        }
+
+        .modal {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+            z-index: 9999; /* 确保弹出窗口显示在最上层 */
+        }
+        .modal-content {
+            width: 50%;
+            margin: 20% auto; /* 居中显示 */
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-modal {
+            display: none; /* 初始时隐藏登录界面 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+            z-index: 2; /* 设置为比侧边栏高的层级 */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-modal input[type="text"],
+        .login-modal input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        .login-modal .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* 游客版样式 */
+        .guest-button {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .guest-button:hover {
+            text-decoration: none;
+        }
+        
+        /* 夜晚星空背景样式 */
+
+        #nightSky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000; /* 设置背景为黑色 */
+            z-index: -1; /* 确保背景位于内容下方 */
+}
+
+        #stars, #stars2, #stars3, #shooting-stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: -1; /* 确保背景位于内容下方 */
+        }
+
+        canvas {
+            display: block;
+            background: #000; /* 背景颜色为黑色 */
+            
+}
+
+    </style>
+
+    <audio id="sidebarSound" src="无标题视频——使用Clipchamp制作.mp3" loop></audio> <!-- 您需要替换为您自己的声音文件 -->
+
+    <script>
+        /* 修改 JavaScript 部分：在侧边栏选项上播放音效 */
+        function playSound() {
+            var audio = new Audio('无标题视频——使用Clipchamp制作.mp3'); // 替换为您的声音文件路径
+            audio.play();
+        }
+
+        function handleSearch(event) {
+          event.preventDefault(); // 阻止表单默认提交行为
+          var searchTerm = document.getElementById('searchInput').value;
+          window.location.href = 'search-results.html?q=' + encodeURIComponent(searchTerm);
+        }
+        // 在侧边栏选项上添加鼠标悬停事件处理函数，触发播放音效
+        document.addEventListener("DOMContentLoaded", function() {
+            var sidebarLinks = document.querySelectorAll('#sidebar a');
+            sidebarLinks.forEach(function(link) {
+                link.addEventListener('mouseover', playSound);
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var sidebar = document.getElementById('sidebar');
+    
+    // 禁止侧边栏滚动事件
+        sidebar.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+    var mainOption = document.getElementById('friendOption');
+    var subOptions = document.getElementById('friendSubOptions');
+
+    mainOption.addEventListener('mouseenter', function() {
+        subOptions.style.display = 'block';
+    });
+
+    mainOption.addEventListener('mouseleave', function() {
+        // 检查鼠标是否在子选项区域内，如果在则不收回子选项
+        var isMouseOverSubOptions = false;
+        subOptions.addEventListener('mouseenter', function() {
+            isMouseOverSubOptions = true;
+        });
+        subOptions.addEventListener('mouseleave', function() {
+            isMouseOverSubOptions = false;
+        });
+
+        // 在鼠标离开好友选项和子选项区域时才收回子选项
+        var timeoutId = setTimeout(function() {
+            if (!isMouseOverSubOptions) {
+                subOptions.style.display = 'none';
+            }
+        }, 100); // 使用延迟确保鼠标在移动时不会立即收回子选项
+    });
+
+    subOptions.addEventListener('mouseleave', function() {
+        subOptions.style.display = 'none';
+    });
+});
+    </script>
+
+    <script>
+        // 定义全局变量用于存储计时器
+        let timeoutId;
+
+        function handleMouseEnter() {
+            clearTimeout(timeoutId); // 清除之前的计时器，防止重复触发
+            document.getElementById('sidebar').style.left = '0'; // 显示侧边栏
+        }
+
+        function handleMouseLeave() {
+            timeoutId = setTimeout(function() {
+                document.getElementById('sidebar').style.left = '-200px'; // 隐藏侧边栏
+            }, 3000); 
+        }
+    </script>
+</head>
+<body>
+
+    <canvas id="nightSky"></canvas>
+
+    <form class="search-box" onsubmit="handleSearch(event)">
+        <span class="icon">🔍</span> <!-- 移动到搜索框里的放大镜符号 -->
+        <input type="text" id="searchInput" placeholder="搜索..." required>
+        <input type="submit" style="display: none;"> <!-- 隐藏的提交按钮 -->
+    </form>
+
+    <div class="content">
+        <div id="subsiteContent" class="subsite-content">
+            <!-- 初始时显示的内容，可以根据需要自行调整 -->
+            <h1>欢迎来到 AI Psychology</h1>
+            <p>在这里开始您的心理学之旅...</p>
+        </div>
+    </div>
+
+    <div id="sidebar" onmouseenter="handleMouseEnter()" onmouseleave="handleMouseLeave()">
+        <span id="home">功能</span> <!-- 功能标识 -->
+        <a href="Forums.html" target="_blank">论坛</a>
+        <a id="friendOption" href="#">好友</a> <!-- 好友选项 -->
+            <div id="friendSubOptions" class="sub-options">
+                <a class="sub-option" href="#">添加好友</a>
+                <a class="sub-option" href="#">邀请好友</a>
+                <a class="sub-option" href="#">好友列表</a>
+            </div>
+        <a href="Psychological counseling.html" target="_blank">心理咨询</a>
+        <a href="Me.html" target="_blank">我的</a>
+        <a href="Knowlegde lecture hall.html">知识讲堂</a>
+    </div>
+
+    <div class="footer">
+        <a href="psychology.html" target="_blank">关于我们</a >
+        <a href="my.html" target="_blank">赞助我们</a >
+        <a href="academy.html" target="_blank">投诉我们</a >
+        <p>版权所有 &copy; 2024 Space Boy保留所有权利</p >
+        <p>联系邮箱: 1224190916@qq.com</p >
+    </div>
+
+    <div id="loginModal" class="modal">
+        <div class="modal-content" style="background-color: #333; color: white; width: 300px;">
+            <!-- 去掉关闭按钮 -->
+            <div class="container">
+                <h2 style="color: #fff; text-align: center;">User Login</h2>
+                <form id="loginForm" style="text-align: center;">
+                    <!-- 缩短用户名框和密码框的长度 -->
+                    <input type="text" id="username" name="username" placeholder="Username" required style="width: 200px; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; outline: none;">
+                    <br> <!-- 换行 -->
+                    <input type="password" id="password" name="password" placeholder="Password" required style="width: 200px; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; outline: none;">
+                    <br> <!-- 换行 -->
+                    <div class="form-group">
+                        <!-- 将登录按钮移到中间 -->
+                        <button type="submit" class="btn" style="padding: 10px 20px; background-color: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; outline: none; display: inline-block;">Login</button>
+                    </div>
+                </form>
+                <div class="link" style="color: #fff; text-align: center;">
+                    <!-- 将忘记密码和创建账号选项设计为按钮，并排在同一行 -->
+                    <div style="display: flex; justify-content: center; margin-top: 10px;"> <!-- 增加间距 -->
+                        <button onclick="window.location.href='forgot-password.html'" style="padding: 10px 20px; background-color: #dc3545; color: #fff; border: none; border-radius: 5px; cursor: pointer; outline: none; margin-right: 10px;">Forgot Password?</button>
+                        <button onclick="window.location.href='create-account.html'" style="padding: 10px 20px; background-color: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer; outline: none;">Create Account</button>
+                    </div>
+                </div>
+                <div class="guest-button" id="guestButton" style="display: block; margin-top: 20px; text-align: center; cursor: pointer; color: #007bff; text-decoration: underline;">Continue as Guest</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后显示弹出式窗口
+        window.onload = function() {
+            var modal = document.getElementById('loginModal');
+            modal.style.display = 'block';
+        }
+
+        var guestButton = document.getElementById('guestButton');
+
+        // 点击游客按钮时隐藏登录窗口
+        guestButton.onclick = function() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+    </script>
+
+<script>
+    const canvas = document.getElementById('nightSky');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    let stars = [], shootingStars = [];
+    
+    function initStars() {
+        for (let i = 0; i < 300; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 1.2,
+                opacity: Math.random()
+            });
+        }
+    }
+    
+    function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(star => {
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+            ctx.fill();
+        });
+    }
+    
+    function updateStars() {
+        stars.forEach(star => {
+            star.opacity += (Math.random() - 0.5) * 0.05;
+            if (star.opacity < 0) star.opacity = 0;
+            if (star.opacity > 1) star.opacity = 1;
+        });
+    }
+    
+    function drawShootingStar() {
+    // 降低流星生成的概率并减少活跃流星的数量
+    if (Math.random() > 0.95 && shootingStars.length < 2) {
+        shootingStars.push({
+            x: Math.random() * canvas.width,
+            y: 0,
+            length: Math.random() * 200 + 50,  // 有些流星的拖尾在 50 到 250 像素之间
+            speed: Math.random() * 1.75 + 0.25,      // 流星的速度在 0.25 到 2 之间
+            opacity: 1,
+            decay: Math.random() * 0.002 + 0.0005 // 透明度每帧减少量在 0.0005 到 0.0025 之间
+        });
+    }
+
+    shootingStars.forEach((star, index) => {
+        ctx.beginPath();
+        ctx.moveTo(star.x, star.y);
+        ctx.lineTo(star.x + star.length, star.y + star.length);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        star.x += star.speed;
+        star.y += star.speed;
+        star.opacity -= star.decay;
+        if (star.opacity <= 0) {
+            shootingStars.splice(index, 1);
+        }
+    });
+
+    shootingStars.forEach((star, index) => {
+        ctx.beginPath();
+        ctx.moveTo(star.x, star.y);
+        ctx.lineTo(star.x + star.length, star.y + star.length);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        star.x += 2;  // 减慢流星的速度
+        star.y += 2;  // 减慢流星的速度
+        star.opacity -= 0.02;  // 可以调整消失的速度
+        if (star.opacity <= 0) shootingStars.splice(index, 1);
+    });
+}
+    
+        shootingStars.forEach((star, index) => {
+            ctx.beginPath();
+            ctx.moveTo(star.x, star.y);
+            ctx.lineTo(star.x + star.length, star.y + star.length);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${star.opacity})`;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+    
+            star.x += 4;
+            star.y += 4;
+            star.opacity -= 0.04;
+            if (star.opacity <= 0) shootingStars.splice(index, 1);
+        });
+    
+    
+    function animate() {
+        drawStars();
+        updateStars();
+        drawShootingStar();
+        requestAnimationFrame(animate);
+    }
+    
+    initStars();
+    animate();
+    </script>
+
+</body>
+</html> 
